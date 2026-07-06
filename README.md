@@ -21,6 +21,10 @@
   <img src="https://img.shields.io/badge/非医疗-文化自测-E65100?style=flat-square" alt="非医疗"/>
 </p>
 
+<p align="center">
+  <em><strong>EN</strong> · Open-source <strong>HarmonyOS</strong> app + <strong>web demo</strong> + <strong>Python</strong> pipeline that maps a frontal face photo to <strong>25 classical color regions</strong> from <em>Huangdi Neijing · Lingshu · Wuse</em> — wellness culture &amp; CV research, <strong>not a medical device</strong>; <strong>commercial use requires written permission</strong> from the author.</em>
+</p>
+
 ---
 
 ## 一句话介绍
