@@ -42,6 +42,18 @@
 
 ## 效果预览
 
+### 鸿蒙 App · 真机报告页
+
+<p align="center">
+  <img src="docs/screenshots/report-region25.jpg" alt="二十五明堂色部色诊报告：标注图与古籍体例综合摘要" width="280"/>
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/report-wellness.jpg" alt="四维养护参考方案：饮食运动作息情绪古籍原文" width="280"/>
+</p>
+
+<p align="center">
+  <sub>左：25 区标注图 + 《灵枢·五色》体例综合摘要 · 右：饮食 / 运动 / 作息 / 情绪四维古籍原文摘录</sub>
+</p>
+
 ### 二十五色部标注（Python 实验室输出）
 
 <p align="center">
