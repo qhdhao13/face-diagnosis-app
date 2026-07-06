@@ -1,0 +1,56 @@
+{
+  "version": "2.1",
+  "layout": "grid_nine_rows",
+  "source": "68点动态格线 + 《灵枢·五色》二十五明堂色部",
+  "baseline": {
+    "origin_anchor": "shangen",
+    "end_anchor": "zhuntou",
+    "description": "v 轴沿鼻柱；格线由 68 点自动生成，静态 row_bounds 仅作兜底"
+  },
+  "grid": {
+    "rows": 9,
+    "columns": 3,
+    "dynamic_from_68": true,
+    "comment": "格线由 grid_from_68.py 按眉/鼻/口/颏关键点计算",
+    "row_bounds_L": [-1.38, -0.92, -0.58, -0.16, 0.22, 0.52, 1.19, 1.42, 1.66, 2.19],
+    "col_bounds_L": [-1.08, -0.32, 0.32, 1.08],
+    "face_width_scale": true,
+    "face_width_min_L": 1.05,
+    "face_width_max_L": 1.25
+  },
+  "cells": [
+    { "id": 11, "name": "左日角",  "row": 0, "col": 0, "side": "left" },
+    { "id": 1,  "name": "天庭",    "row": 0, "col": 1, "side": "midline" },
+    { "id": 10, "name": "右日角",  "row": 0, "col": 2, "side": "right" },
+
+    { "id": 13, "name": "左月角",  "row": 1, "col": 0, "side": "left" },
+    { "id": 2,  "name": "阙中",    "row": 1, "col": 1, "side": "midline" },
+    { "id": 12, "name": "右月角",  "row": 1, "col": 2, "side": "right" },
+
+    { "id": 15, "name": "左阙",    "row": 2, "col": 0, "side": "left" },
+    { "id": 3,  "name": "山根",    "row": 2, "col": 1, "side": "midline" },
+    { "id": 14, "name": "右阙",    "row": 2, "col": 2, "side": "right" },
+
+    { "id": 17, "name": "左山根",  "row": 3, "col": 0, "side": "left" },
+    { "id": 4,  "name": "年上",    "row": 3, "col": 1, "side": "midline" },
+    { "id": 16, "name": "右山根",  "row": 3, "col": 2, "side": "right" },
+
+    { "id": 23, "name": "左卧蚕",  "row": 4, "col": 0, "side": "left" },
+    { "id": 5,  "name": "寿上",    "row": 4, "col": 1, "side": "midline" },
+    { "id": 22, "name": "右卧蚕",  "row": 4, "col": 2, "side": "right" },
+
+    { "id": 19, "name": "左鼻翼",  "row": 5, "col": 0, "side": "left" },
+    { "id": 6,  "name": "准头",    "row": 5, "col": 1, "side": "midline" },
+    { "id": 18, "name": "右鼻翼",  "row": 5, "col": 2, "side": "right" },
+
+    { "id": 21, "name": "左颧骨",  "row": 6, "col": 0, "side": "left" },
+    { "id": 7,  "name": "人中",    "row": 6, "col": 1, "side": "midline" },
+    { "id": 20, "name": "右颧骨",  "row": 6, "col": 2, "side": "right" },
+
+    { "id": 25, "name": "左法令",  "row": 7, "col": 0, "side": "left" },
+    { "id": 8,  "name": "承浆",    "row": 7, "col": 1, "side": "midline" },
+    { "id": 24, "name": "右法令",  "row": 7, "col": 2, "side": "right" },
+
+    { "id": 9,  "name": "地阁",    "row": 8, "col": 1, "side": "midline" }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "entries": [
+    { "phone": "13503238950", "dailyLimit": 10 },
+    { "phone": "18033556666", "dailyLimit": 10 },
+    { "phone": "18903351102", "dailyLimit": 10 },
+    { "phone": "17832556666", "dailyLimit": 5 },
+    { "phone": "17832556898", "dailyLimit": 5 }
+  ]
+}

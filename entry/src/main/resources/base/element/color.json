@@ -1,0 +1,15 @@
+{
+  "color": [
+    { "name": "start_window_background", "value": "#F5F0E8" },
+    { "name": "primary", "value": "#8B4513" },
+    { "name": "primary_light", "value": "#C4A574" },
+    { "name": "background", "value": "#F5F0E8" },
+    { "name": "card_bg", "value": "#FFFBF5" },
+    { "name": "text_primary", "value": "#3D2B1F" },
+    { "name": "text_secondary", "value": "#6B5344" },
+    { "name": "accent", "value": "#B8860B" },
+    { "name": "divider", "value": "#E8DDD0" },
+    { "name": "warning", "value": "#C0392B" },
+    { "name": "success", "value": "#2E7D32" }
+  ]
+}

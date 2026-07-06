@@ -1,0 +1,30 @@
+{
+  "mtcnn": {
+    "inputWidth": 320,
+    "inputHeight": 240,
+    "scale": 0.0078125,
+    "meanR": 127,
+    "meanG": 127,
+    "meanB": 127,
+    "dataFormat": "NCHW",
+    "detectorType": "ultraface"
+  },
+  "mobilenetv3": {
+    "inputWidth": 224,
+    "inputHeight": 224,
+    "scale": 0.00392156862745098,
+    "meanR": 0,
+    "meanG": 0,
+    "meanB": 0,
+    "dataFormat": "NCHW"
+  },
+  "mobileclip": {
+    "inputWidth": 224,
+    "inputHeight": 224,
+    "scale": 0.00392156862745098,
+    "meanR": 0,
+    "meanG": 0,
+    "meanB": 0,
+    "dataFormat": "NCHW"
+  }
+}

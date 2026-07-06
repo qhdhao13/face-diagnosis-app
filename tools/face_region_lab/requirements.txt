@@ -1,0 +1,6 @@
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+mediapipe>=0.10.0
+# 可选：dlib>=19.24（需 shape_predictor_68_face_landmarks.dat 放 models/ 目录）
+# 首次运行 demo 需 models/face_landmarker.task（README 含下载命令）

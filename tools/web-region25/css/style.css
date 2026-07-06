@@ -1,0 +1,248 @@
+/* 二十五明堂色诊 · 网页版样式 */
+:root {
+  --bg: #f7f3eb;
+  --card: #fffdf8;
+  --primary: #8b4513;
+  --primary-light: #c4a574;
+  --text: #3d2914;
+  --muted: #7a6548;
+  --border: #e8dcc8;
+  --warn: #a0522d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
+
+header {
+  text-align: center;
+  padding: 24px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+header h1 {
+  margin: 0 0 8px;
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+input[type='tel'],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.row input {
+  flex: 1;
+  min-width: 160px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.92;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: var(--primary-light);
+  color: var(--text);
+}
+
+#preview {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: 8px;
+  margin-top: 10px;
+  object-fit: contain;
+}
+
+.status {
+  font-size: 0.9rem;
+  color: var(--muted);
+  min-height: 1.4em;
+  margin: 12px 0;
+}
+
+.status.error {
+  color: var(--warn);
+}
+
+#quota {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.disclaimer {
+  font-size: 0.75rem;
+  color: var(--warn);
+  background: #fff5f0;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+#annotated {
+  width: 100%;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+
+#summary {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+#lineItems {
+  padding-left: 1.2rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+#lineItems li {
+  margin-bottom: 6px;
+}
+
+.meta {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* 拍摄距离与光线提示（与鸿蒙 App 扫描页文案一致） */
+.shoot-tips {
+  background: #f5ebe0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.shoot-tips-title {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.shoot-tips ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.shoot-tips li {
+  margin-bottom: 4px;
+}
+
+.shoot-tips li:last-child {
+  margin-bottom: 0;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.upload-btn {
+  flex: 1;
+  min-width: 160px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+}
+
+.photo-name {
+  margin: 0 0 8px;
+  min-height: 1.2em;
+}
+
+#photo[hidden] {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.25rem;
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "face-diagnosis-experience-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "体验免 Key 代理：手机号白名单 + 每日配额 + DashScope 转发",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

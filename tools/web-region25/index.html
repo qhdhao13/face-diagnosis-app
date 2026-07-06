@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="description" content="二十五明堂色诊 · 古籍养生文化自测（非医疗诊断）" />
+  <title>二十五明堂色诊 · qhdhao.cn</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <a class="back-link" href="/">← 返回祖蛙博客</a>
+
+    <header>
+      <h1>二十五明堂色诊</h1>
+      <p>《灵枢·五色》· 上传正脸照片 · 云端 Lab 分析 · 文化自测参考</p>
+    </header>
+
+    <section class="card">
+      <h2>1. 手机号（白名单）</h2>
+      <p class="meta">与鸿蒙 App 相同体验服，须管理员白名单后方可分析。</p>
+      <label for="phone">手机号</label>
+      <div class="row">
+        <input id="phone" type="tel" maxlength="11" placeholder="11 位手机号" autocomplete="tel" />
+        <button type="button" id="registerBtn">注册 / 登录</button>
+      </div>
+      <p id="quota">未登录</p>
+      <p class="meta">当前账号：<span id="phoneDisplay">—</span></p>
+    </section>
+
+    <section class="card">
+      <h2>2. 基础信息（可选）</h2>
+      <label for="gender">性别（用于与照片核对）</label>
+      <select id="gender">
+        <option value="未设置">未设置</option>
+        <option value="男">男</option>
+        <option value="女">女</option>
+      </select>
+    </section>
+
+    <section class="card">
+      <h2>3. 上传正脸照片</h2>
+      <div class="shoot-tips" role="note" aria-label="拍摄提示">
+        <p class="shoot-tips-title">拍摄提示</p>
+        <ul>
+          <li><strong>最佳距离：</strong>约 40–60 厘米，正脸对准画面，额、颧、颏居中、无遮挡。</li>
+          <li><strong>拍摄光线：</strong>明亮均匀的自然光或室内顶灯，避免逆光、强阴影与重度美颜滤镜。</li>
+        </ul>
+      </div>
+      <!-- 隐藏原生文件选择，由按钮触发；不设 capture 以便手机选相册、电脑选本地文件 -->
+      <input id="photo" type="file" accept="image/jpeg,image/png,image/webp" hidden />
+      <div class="upload-actions">
+        <button type="button" id="pickPhotoBtn" class="upload-btn">上传已有照片</button>
+      </div>
+      <p id="photoName" class="meta photo-name">未选择照片</p>
+      <img id="preview" alt="预览" hidden />
+      <p class="meta">分析完成后照片仅存于服务器会话目录。</p>
+      <button type="button" id="analyzeBtn" class="secondary" style="margin-top:12px;width:100%;">开始色诊分析</button>
+    </section>
+
+    <p id="status" class="status">请先注册手机号，再上传照片</p>
+
+    <section id="result" class="card" hidden>
+      <h2>分析报告</h2>
+      <p class="meta">会话 ID：<span id="sessionId"></span> · 引擎：<span id="engine"></span></p>
+      <img id="annotated" alt="二十五区标注图" />
+      <h2>综合</h2>
+      <div id="summary"></div>
+      <h2 style="margin-top:16px;">分项（25 区）</h2>
+      <ol id="lineItems"></ol>
+    </section>
+
+    <p class="disclaimer">
+      本页为古籍面诊养生文化自测参考，非医疗诊断、不提供治疗建议。如有不适请及时就医。
+      分析引擎：region25_cloud · 体验服 49.232.232.27
+    </p>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/summary.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

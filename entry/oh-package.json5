@@ -1,0 +1,10 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "face-diagnosis-app 主模块",
+  "main": "",
+  "author": "qhdhao",
+  "license": "Proprietary",
+  "dependencies": {}
+}

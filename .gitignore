@@ -1,0 +1,21 @@
+/node_modules/
+/oh_modules/
+/local.properties
+/.idea/
+/build/
+/**/build/
+/.hvigor/
+**/oh-package-lock.json5
+*.hap
+*.app
+.DS_Store
+
+# 端侧模型工具（大权重不提交 Git）
+tools/face_model/.venv/
+tools/face_model/output/downloads/
+tools/face_model/output/ms/
+tools/face_model/output/onnx/
+tools/face_model/output/*.onnx
+tools/face_model/output/*.pt
+tools/face_model/output/*.pth
+tools/face_region_lab/.venv/

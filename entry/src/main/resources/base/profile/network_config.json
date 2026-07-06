@@ -1,0 +1,18 @@
+{
+  "network-security-config": {
+    "base-config": {
+      "cleartextTrafficPermitted": true
+    },
+    "domain-config": [
+      {
+        "domains": [
+          {
+            "name": "49.232.232.27",
+            "include-subdomains": false
+          }
+        ],
+        "cleartextTrafficPermitted": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "recommendedStack": {
+    "name": "极简 AI 面诊（推荐）",
+    "stage1": "UltraFace RFB-320 → mtcnn.om",
+    "stage2": "FaceRegionLayout 规则分区（无模型）",
+    "stage3": "ImageColorAnalyzer RGB（无模型）",
+    "doc": "docs/MODEL_ALTERNATIVES.md"
+  },
+  "note": "原始权重已下载到 tools/face_model/output/；App rawfile 需 MindSpore Lite .ms（命名为 .om）。Mac 上需 Linux/Windows 或 Docker 运行 converter_lite。",
+  "stage1_face": {
+    "appFile": "mtcnn.om",
+    "recommendedOnnx": "tools/face_model/output/onnx/mtcnn_ultraface.onnx",
+    "source": "UltraFace RFB-320（ONNX Model Zoo，等价替代魔搭 mtcnn-light 移动端检测）",
+    "modelscopeRef": "iic/cv_manual_face-detection_mtcnn",
+    "modelscopeNote": "魔搭 MTCNN 为 numpy 三阶段权重，不适合直接 loadModelFromBuffer",
+    "configKey": "mtcnn",
+    "inputShape": "1,3,240,320",
+    "dataFormat": "NCHW",
+    "detectorType": "ultraface",
+    "onnxSizeBytes": 1270727,
+    "deployed": false
+  },
+  "stage2_segment": {
+    "appFile": "mobilenetv3.om",
+    "recommendedOnnx": "tools/face_model/output/onnx/mobilenetv3_small_224.onnx",
+    "source": "torchvision MobileNetV3-Small（224 占位，Stage2 仍主要用规则分区；完整人体解析模型过大 ~723MB）",
+    "modelscopeRef": "damo/cv_resnet101_image-multiple-human-parsing",
+    "modelscopeNote": "魔搭人体解析 pytorch_model.pt 约 723MB，不建议打入 App",
+    "configKey": "mobilenetv3",
+    "inputShape": "1,3,224,224",
+    "dataFormat": "NHWC",
+    "onnxSizeBytes": 327367,
+    "deployed": false
+  },
+  "stage3_clip": {
+    "appFile": "mobileclip.om",
+    "weightsPt": "tools/face_model/output/downloads/apple/MobileCLIP-S0/mobileclip_s0.pt",
+    "source": "魔搭 apple/MobileCLIP-S0",
+    "configKey": "mobileclip",
+    "inputShape": "1,3,224,224",
+    "dataFormat": "NHWC",
+    "weightsSizeBytes": 215934653,
+    "deployed": false,
+    "pending": "需 export 图像编码器 ONNX 后再 converter_lite"
+  },
+  "textLlm": {
+    "type": "api",
+    "official": "通义千问轻量 / 智谱 OpenAI 兼容 API",
+    "private": "设置页 Token + 会员审批",
+    "code": "services/TextGenerationService.ets"
+  }
+}

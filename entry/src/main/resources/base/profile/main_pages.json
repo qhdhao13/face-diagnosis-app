@@ -1,0 +1,10 @@
+{
+  "src": [
+    "pages/Index",
+    "pages/ScanPage",
+    "pages/ReportPage",
+    "pages/SettingsPage",
+    "pages/PrivacyPage",
+    "pages/DisclaimerPage"
+  ]
+}

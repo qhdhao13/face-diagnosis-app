@@ -1,0 +1,14 @@
+端侧 .om 模型放置目录
+
+【当前状态】原始 ONNX 已准备在 tools/face_model/output/onnx/
+  需 converter_lite 转为 .om 后放入本目录（Mac 请在 Windows DevEco 或 Docker 中转换）
+
+  mtcnn.om          ← tools/face_model/output/onnx/mtcnn_ultraface.onnx
+  mobilenetv3.om    ← tools/face_model/output/onnx/mobilenetv3_small_224.onnx
+  mobileclip.om     ← 魔搭 apple/MobileCLIP-S0 权重已下载，待导出 ONNX 后转换
+
+一键转换（Linux/Windows）:
+  export CONVERTER_LITE=/path/to/converter_lite
+  bash tools/face_model/prepare_rawfile.sh
+
+详见 tools/face_model/README.md 与 docs/MODELS_SOURCES.md

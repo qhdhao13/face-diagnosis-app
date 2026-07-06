@@ -1,0 +1,21 @@
+{
+  "string": [
+    { "name": "module_desc", "value": "古籍面诊养生文化自测主模块" },
+    { "name": "EntryAbility_desc", "value": "古籍面诊养生文化自测工具" },
+    { "name": "EntryAbility_label", "value": "古籍面诊养生" },
+    { "name": "form_label", "value": "养生自测卡片" },
+    { "name": "form_desc", "value": "古籍面诊养生文化自测元服务卡片" },
+    { "name": "permission_camera_reason", "value": "用于拍摄面部照片，经您授权后上传至 AI 服务进行气色分析，分析完成后本地立即删除" },
+    { "name": "permission_internet_reason", "value": "用于将面部照片上传至您配置的 AI 服务进行分析（需您主动授权），断网时使用本地规则兜底" },
+    { "name": "permission_network_info_reason", "value": "仅用于检测网络状态以适配离线/在线模式切换" },
+    { "name": "disclaimer_title", "value": "重要声明" },
+    { "name": "disclaimer_content", "value": "本应用为传统中医古籍文化趣味自测工具，非医疗软件。所有内容仅为养生文化参考，不具备诊断、诊疗功能。身体不适请及时就医。" },
+    { "name": "privacy_title", "value": "隐私政策" },
+    { "name": "scan_title", "value": "古籍面诊自测" },
+    { "name": "report_title", "value": "养生参考报告" },
+    { "name": "settings_title", "value": "设置" },
+    { "name": "start_scan", "value": "开始自测" },
+    { "name": "view_settings", "value": "设置" },
+    { "name": "official_model_tip", "value": "当前推荐模型可获得最优古籍解读与自测体验" }
+  ]
+}
