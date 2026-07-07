@@ -275,6 +275,47 @@ export class CameraSessionManager {
     return result;
   }
 
+  /**
+   * 连续拍照（连拍选帧用）
+   * @param count 张数
+   * @param intervalMs 两次快门间隔
+   */
+  async takePhotoBurst(count: number, intervalMs: number): Promise<CapturedImage[]> {
+    const shots: CapturedImage[] = [];
+    if (!this.isRunning || this.photoOutput === null || count <= 0) {
+      console.error('[CameraSession] takePhotoBurst: 会话未就绪');
+      return shots;
+    }
+    if (this.isCapturing) {
+      console.warn('[CameraSession] takePhotoBurst: 已有拍照进行中');
+      return shots;
+    }
+
+    this.isCapturing = true;
+    try {
+      for (let i = 0; i < count; i++) {
+        const frame = await this.takePhotoOnce(false);
+        if (frame !== null) {
+          shots.push(frame);
+        }
+        if (i < count - 1 && intervalMs > 0) {
+          await CameraSessionManager.delay(intervalMs);
+        }
+      }
+    } finally {
+      this.isCapturing = false;
+    }
+
+    console.info(`[CameraSession] 连拍完成 ${shots.length}/${count} 张有效`);
+    return shots;
+  }
+
+  private static delay(ms: number): Promise<void> {
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
+
   private takePhotoOnce(disableMirror: boolean): Promise<CapturedImage | null> {
     return new Promise<CapturedImage | null>((resolve) => {
       this.clearCaptureTimeout();

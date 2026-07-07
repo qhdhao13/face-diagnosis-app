@@ -12,6 +12,13 @@ import { NetworkAuthDialog } from '../components/NetworkAuthDialog';
 import { ExperienceServerConfig } from '../common/constants/AppConstants';
 import { ImageBrightnessUtil, LIGHT_BLOCK_THRESHOLD, LIGHT_WARN_THRESHOLD } from '../common/utils/ImageBrightnessUtil';
 import { GalleryImagePickerUtil } from '../common/utils/GalleryImagePickerUtil';
+import {
+  FACE_GUIDE_OVAL_ASPECT,
+  FACE_GUIDE_OVAL_TOP_MARGIN_VP,
+  FACE_GUIDE_OVAL_WIDTH_RATIO,
+  FaceGuideCropSpec,
+  PortraitCropUtil
+} from '../common/utils/PortraitCropUtil';
 
 /** 联网授权后继续的分析来源 */
 type AnalysisSource = 'capture' | 'gallery' | 'none';
@@ -29,20 +36,16 @@ struct ScanPage {
   @State cameraStarting: boolean = false;
   /** 权限通过后显示 XComponent */
   @State showPreview: boolean = false;
-  /** 人像远近：0=远，1=近（映射到镜头变焦或预览缩放） */
-  @State zoomSliderValue: number = 0.4;
+  /** 人像远近：0=远，1=近（默认略近，便于满屏采集） */
+  @State zoomSliderValue: number = 0.55;
   /** 不支持镜头变焦时，用预览视觉缩放（仅对齐辅助） */
   @State previewVisualScale: number = 1.0;
   @State zoomSupported: boolean = false;
+  /** 采集阶段：ready 待拍 | capturing 连拍中 | captured 已成功 | analyzing 分析中 */
+  @State captureStage: string = 'ready';
 
-  /** 固定椭圆取景框（仅作对准参考，不随滑条变化） */
-  private readonly FRAME_WIDTH: number = 285;
-  private readonly FRAME_HEIGHT: number = 360;
   /** 双指捏合起始值 */
-  private pinchBaseZoom: number = 0.4;
-
-  private previewProfileWidth: number = 1280;
-  private previewProfileHeight: number = 720;
+  private pinchBaseZoom: number = 0.55;
 
   private xComponentController: XComponentController = new XComponentController();
   private uiContext: UIContext = this.getUIContext();
@@ -89,6 +92,7 @@ struct ScanPage {
     this.cameraReady = false;
     this.cameraStarting = false;
     this.initScheduled = false;
+    this.captureStage = 'ready';
   }
 
   async aboutToDisappear(): Promise<void> {
@@ -153,9 +157,10 @@ struct ScanPage {
     this.cameraReady = true;
     this.refreshZoomCapability();
     if (this.usingFrontCamera) {
-      this.statusText = '椭圆框固定作对准参考；拖动滑条或双指捏合，调节人像远近';
+      this.captureStage = 'ready';
+      this.statusText = '对准椭圆后，点右下角拍摄';
     } else {
-      this.statusText = '当前为后置摄像头，请翻转手机用屏幕侧对准面部';
+      this.statusText = '后置镜头：请用屏幕侧对准面部';
     }
   }
 
@@ -248,7 +253,13 @@ struct ScanPage {
   }
 
   estimatePreviewHeightPx(): number {
-    return Math.round(this.uiContext.vp2px(400));
+    try {
+      const displayInfo = display.getDefaultDisplaySync();
+      return Math.round(displayInfo.height * 0.92);
+    } catch (err) {
+      console.warn('[ScanPage] 获取屏幕高度失败', JSON.stringify(err));
+      return Math.round(this.uiContext.vp2px(640));
+    }
   }
 
   /** 区域尺寸就绪后配置 Surface 并调度相机 */
@@ -437,11 +448,13 @@ struct ScanPage {
 
     this.analyzing = true;
     this.lightWarning = false;
+    this.captureStage = 'analyzing';
     this.statusText = '请选择相册中的正脸照片...';
 
     try {
       const picked = await GalleryImagePickerUtil.pickPortraitImage();
       if (picked === null) {
+        this.captureStage = 'ready';
         this.statusText = '未选择照片，可继续拍照或重新上传';
         return;
       }
@@ -450,11 +463,44 @@ struct ScanPage {
       await this.analyzeCapturedImage(picked, '未能读取所选照片，请换一张重试');
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
+      this.captureStage = 'ready';
       this.statusText = msg.length > 0 ? msg : '分析过程出现异常，请重试';
       console.error('[ScanPage] 相册分析失败', JSON.stringify(err));
     } finally {
       this.analyzing = false;
+      if (this.captureStage !== 'ready') {
+        this.captureStage = 'ready';
+      }
     }
+  }
+
+  /** 与椭圆 UI 一致的裁切参数（拍照后只上传头像区域） */
+  buildFaceGuideCropSpec(): FaceGuideCropSpec {
+    const viewW = this.viewWidthPx > 0 ? this.viewWidthPx : this.estimatePreviewWidthPx();
+    const viewH = this.viewHeightPx > 0 ? this.viewHeightPx : this.estimatePreviewHeightPx();
+    return {
+      viewWidthPx: viewW,
+      viewHeightPx: viewH,
+      ovalWidthRatio: FACE_GUIDE_OVAL_WIDTH_RATIO,
+      ovalAspect: FACE_GUIDE_OVAL_ASPECT,
+      ovalTopMarginPx: Math.round(this.uiContext.vp2px(FACE_GUIDE_OVAL_TOP_MARGIN_VP))
+    };
+  }
+
+  /** 连拍选帧后裁切椭圆内头像，不上传全景 */
+  async cropCapturedPortrait(captured: CapturedImage | null): Promise<CapturedImage | null> {
+    if (captured === null) {
+      return null;
+    }
+    const cropped = await PortraitCropUtil.cropToFaceGuide(captured, this.buildFaceGuideCropSpec());
+    return cropped !== null ? cropped : captured;
+  }
+
+  /** 短暂停留，让用户看见「已采集」提示 */
+  private delayMs(ms: number): Promise<void> {
+    return new Promise<void>((resolve) => {
+      setTimeout(resolve, ms);
+    });
   }
 
   async doCaptureAndAnalyze(): Promise<void> {
@@ -464,84 +510,245 @@ struct ScanPage {
 
     this.analyzing = true;
     this.lightWarning = false;
-    this.statusText = '正在拍照并分析，请稍候...';
+    this.captureStage = 'capturing';
+    this.statusText = '采集中，请保持正脸不动…';
 
     try {
       const camera = ModuleRegistry.getCamera();
-      const captured = await camera.capturePhoto();
-      await this.analyzeCapturedImage(captured, '拍照失败：未获取到图像数据，请保持面部在框内后重试');
+      const rawCaptured = await camera.captureBestPhoto();
+      if (rawCaptured === null || rawCaptured.data.byteLength === 0) {
+        this.captureStage = 'ready';
+        this.statusText = '拍照失败，请保持面部在椭圆内后重试';
+        return;
+      }
+
+      const captured = await this.cropCapturedPortrait(rawCaptured);
+      if (captured === null || captured.data.byteLength === 0) {
+        this.captureStage = 'ready';
+        this.statusText = '头像裁切失败，请重试';
+        return;
+      }
+
+      // 采集成功：底部显著提示「已采集」
+      this.captureStage = 'captured';
+      this.statusText = '头像已裁切完成';
+      await this.delayMs(800);
+
+      this.captureStage = 'analyzing';
+      this.statusText = '正在分析，请稍候…';
+      await this.analyzeCapturedImage(captured, '分析失败，请重试');
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
+      this.captureStage = 'ready';
       this.statusText = msg.length > 0 ? msg : '分析过程出现异常，请重试';
       console.error('[ScanPage] 分析失败', JSON.stringify(err));
     } finally {
       this.analyzing = false;
+      if (this.captureStage !== 'ready') {
+        this.captureStage = 'ready';
+      }
     }
   }
 
-  getFrameWidth(): number {
-    return this.FRAME_WIDTH;
+  /** 底部唯一状态行（避免与预览区提示重叠） */
+  @Builder
+  BottomStatusLine() {
+    if (this.captureStage === 'captured') {
+      Text('✓ 已采集')
+        .fontSize(22)
+        .fontWeight(FontWeight.Bold)
+        .fontColor('#A5D6A7')
+        .textAlign(TextAlign.Center)
+        .width('100%')
+    } else if (this.captureStage === 'capturing') {
+      Text('采集中，请保持正脸不动…')
+        .fontSize(16)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#FFE082')
+        .textAlign(TextAlign.Center)
+        .width('100%')
+    } else if (this.captureStage === 'analyzing') {
+      Text('正在分析，请稍候…')
+        .fontSize(16)
+        .fontColor('#FFFFFFDD')
+        .textAlign(TextAlign.Center)
+        .width('100%')
+    } else if (this.lightWarning) {
+      Text('⚠ 光线偏暗，请移至明亮处')
+        .fontSize(14)
+        .fontColor('#FFE082')
+        .textAlign(TextAlign.Center)
+        .width('100%')
+    } else if (!this.cameraReady && this.permissionGranted) {
+      Text('预览未就绪，点此重试')
+        .fontSize(14)
+        .fontColor('#FFE082')
+        .textAlign(TextAlign.Center)
+        .width('100%')
+        .onClick(() => {
+          this.retryPreview();
+        })
+    } else if (this.cameraReady) {
+      if (!this.usingFrontCamera) {
+        Text('后置镜头：请用屏幕侧对准面部')
+          .fontSize(13)
+          .fontColor('#FFFFFFCC')
+          .textAlign(TextAlign.Center)
+          .width('100%')
+      } else {
+        Text('正脸对准椭圆 · 右侧按钮拍摄 · 仅上传框内头像')
+          .fontSize(13)
+          .fontColor('#FFFFFFCC')
+          .textAlign(TextAlign.Center)
+          .width('100%')
+      }
+    } else {
+      Text(this.statusText)
+        .fontSize(13)
+        .fontColor('#FFFFFFCC')
+        .textAlign(TextAlign.Center)
+        .width('100%')
+    }
   }
 
-  getFrameHeight(): number {
-    return this.FRAME_HEIGHT;
+  /** 底部控制区：提示 + 变焦 + 左右按钮（全部在屏幕下方） */
+  @Builder
+  BottomControlPanel() {
+    Column({ space: 10 }) {
+      this.BottomStatusLine()
+
+      Row() {
+        Text('远')
+          .fontSize(12)
+          .fontColor('#FFFFFFAA')
+          .width(24)
+        Slider({
+          value: this.zoomSliderValue,
+          min: 0,
+          max: 1,
+          step: 0.02,
+          style: SliderStyle.OutSet
+        })
+          .layoutWeight(1)
+          .blockColor(Color.White)
+          .trackColor('#FFFFFF33')
+          .selectedColor(Color.White)
+          .enabled(!this.analyzing)
+          .onChange((value: number) => {
+            this.applyZoomFromSlider(value);
+          })
+        Text('近')
+          .fontSize(12)
+          .fontColor('#FFFFFFAA')
+          .width(24)
+          .textAlign(TextAlign.End)
+      }
+      .width('100%')
+
+      // 左下相册 · 右下拍摄（贴屏幕底边两侧）
+      Row() {
+        Column() {
+          Button(this.analyzing ? '…' : '相册')
+            .width(64)
+            .height(64)
+            .fontSize(14)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#5C3D2E')
+            .borderRadius(32)
+            .backgroundColor(this.analyzing ? '#FFE08266' : '#FFE082')
+            .enabled(!this.analyzing)
+            .onClick(() => this.galleryPickAndAnalyze())
+          Text('相册')
+            .fontSize(11)
+            .fontColor('#FFE082')
+            .margin({ top: 4 })
+        }
+        .alignItems(HorizontalAlign.Center)
+
+        Blank().layoutWeight(1)
+
+        Column() {
+          this.ShutterButton()
+          Text('拍摄')
+            .fontSize(11)
+            .fontColor('#FFFFFFCC')
+            .margin({ top: 4 })
+        }
+        .alignItems(HorizontalAlign.Center)
+      }
+      .width('100%')
+      .alignItems(VerticalAlign.Bottom)
+    }
+    .width('100%')
+    .padding({ left: 20, right: 20, top: 12, bottom: 24 })
+    .backgroundColor('#CC000000')
+  }
+
+  /** 竖向椭圆宽度（窄边，占屏宽百分比） */
+  getFrameWidthPercent(): string {
+    return `${Math.round(FACE_GUIDE_OVAL_WIDTH_RATIO * 100)}%`;
+  }
+
+  /** 宽高比 width/height，小于 1 即为竖立椭圆 */
+  getOvalAspectRatio(): number {
+    return FACE_GUIDE_OVAL_ASPECT;
+  }
+
+  /** 圆形拍摄按钮（手动按下才开始连拍，不自动拍照） */
+  @Builder
+  ShutterButton() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column()
+        .width(76)
+        .height(76)
+        .border({ width: 4, color: '#FFFFFFDD' })
+        .borderRadius(38)
+        .backgroundColor('#FFFFFF00')
+
+      Column()
+        .width(this.analyzing ? 62 : 66)
+        .height(this.analyzing ? 62 : 66)
+        .borderRadius(33)
+        .backgroundColor(this.analyzing ? '#FFFFFF66' : Color.White)
+    }
+    .width(84)
+    .height(84)
+    .opacity(this.cameraReady && !this.analyzing ? 1 : 0.45)
+    .onClick(() => {
+      if (!this.analyzing && this.cameraReady) {
+        this.captureAndAnalyze();
+      }
+    })
+  }
+
+  /** 竖向椭圆 + 虚线中轴对准框 */
+  @Builder
+  FaceGuideOval() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column()
+        .width('100%')
+        .height('100%')
+        .border({ width: 3, color: '#FFFFFFCC' })
+        .borderRadius('50%')
+
+      // 颜面正中虚线（额—鼻—颏中轴）
+      Column()
+        .width(2)
+        .height('92%')
+        .border({
+          width: { left: 2, right: 0, top: 0, bottom: 0 },
+          color: { left: '#FFFFFFAA' },
+          style: { left: BorderStyle.Dashed }
+        })
+    }
+    .width(this.getFrameWidthPercent())
+    .aspectRatio(this.getOvalAspectRatio())
   }
 
   build() {
-    Column() {
-      Row() {
-        Text('←')
-          .fontSize(22)
-          .fontColor($r('app.color.primary'))
-          .onClick(() => NavigationHelper.back(this.uiContext))
-        Text('古籍面诊自测')
-          .fontSize(18)
-          .fontWeight(FontWeight.Bold)
-          .fontColor($r('app.color.text_primary'))
-          .layoutWeight(1)
-          .textAlign(TextAlign.Center)
-        // 顶部常驻入口：小屏上底部按钮可能被挡住，此处始终可见
-        Text(this.analyzing ? '…' : '上传照片')
-          .fontSize(14)
-          .fontColor(this.analyzing ? $r('app.color.text_secondary') : $r('app.color.primary'))
-          .fontWeight(FontWeight.Medium)
-          .width(56)
-          .textAlign(TextAlign.End)
-          .onClick(() => {
-            if (!this.analyzing) {
-              this.galleryPickAndAnalyze();
-            }
-          })
-      }
-      .width('100%')
-      .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-
-      Scroll() {
-        Column() {
-      // 拍摄提示：距离与光线（固定展示，帮助用户一次拍准）
-      Column({ space: 4 }) {
-        Text('拍摄提示')
-          .fontSize(12)
-          .fontWeight(FontWeight.Medium)
-          .fontColor($r('app.color.primary'))
-          .width('100%')
-        Text('最佳距离：约 40–60 厘米，正脸对准椭圆框，额、颧、颏居中、无遮挡')
-          .fontSize(11)
-          .fontColor($r('app.color.text_secondary'))
-          .width('100%')
-        Text('拍摄光线：明亮均匀的自然光或室内顶灯，避免逆光、强阴影与重度美颜滤镜')
-          .fontSize(11)
-          .fontColor($r('app.color.text_secondary'))
-          .width('100%')
-      }
-      .width('90%')
-      .alignItems(HorizontalAlign.Start)
-      .padding({ left: 12, right: 12, top: 10, bottom: 10 })
-      .backgroundColor($r('app.color.primary_light'))
-      .borderRadius(10)
-      .margin({ bottom: 8 })
-
-      Stack({ alignContent: Alignment.Center }) {
+    Stack({ alignContent: Alignment.TopStart }) {
+      // 第一层：满屏相机预览 + 椭圆参考框
+      Stack({ alignContent: Alignment.TopStart }) {
         if (this.showPreview) {
           XComponent({
             id: 'cameraPreviewSurface',
@@ -549,9 +756,8 @@ struct ScanPage {
             libraryname: '',
             controller: this.xComponentController
           })
-            // 官方：竖屏显示时 XComponent 宽高与 preview 流宽高对调
-            .width(this.uiContext.px2vp(this.previewProfileHeight))
-            .height(this.uiContext.px2vp(this.previewProfileWidth))
+            .width('100%')
+            .height('100%')
             .scale({ x: this.previewVisualScale, y: this.previewVisualScale })
             .onAreaChange((_oldValue: Area, newValue: Area) => {
               const widthPx = Math.round(this.uiContext.vp2px(Number(newValue.width)));
@@ -573,51 +779,29 @@ struct ScanPage {
             .backgroundColor('#000000')
         }
 
-        Column()
-          .width(this.getFrameWidth())
-          .height(this.getFrameHeight())
-          .border({ width: 2, color: '#FFFFFFAA' })
-          .borderRadius(this.getFrameWidth() / 2)
-
-        if (this.cameraReady && !this.usingFrontCamera) {
-          Text('后置镜头：请用屏幕这一面对准面部')
-            .fontSize(12)
-            .fontColor('#FFD700')
-            .backgroundColor('#000000AA')
-            .padding({ left: 10, right: 10, top: 4, bottom: 4 })
-            .borderRadius(8)
-            .position({ x: '50%', y: 12 })
-            .markAnchor({ x: '50%', y: 0 })
+        // 竖立椭圆 + 虚线中轴，偏上居中
+        Column() {
+          this.FaceGuideOval()
         }
-
-        if (this.lightWarning) {
-          Text('⚠ 光线不足，请换至明亮环境')
-            .fontSize(13)
-            .fontColor('#FFD700')
-            .backgroundColor('#000000AA')
-            .padding({ left: 12, right: 12, top: 6, bottom: 6 })
-            .borderRadius(8)
-            .position({ x: '50%', y: 16 })
-            .markAnchor({ x: '50%', y: 0 })
-        }
+        .width('100%')
+        .alignItems(HorizontalAlign.Center)
+        .margin({ top: FACE_GUIDE_OVAL_TOP_MARGIN_VP })
 
         if (this.cameraStarting) {
-          Column() {
-            Text('正在打开相机...')
-              .fontSize(15)
+          Column({ space: 8 }) {
+            Text('正在打开相机…')
+              .fontSize(20)
+              .fontWeight(FontWeight.Medium)
               .fontColor(Color.White)
           }
           .width('100%')
           .height('100%')
-          .backgroundColor('#00000055')
+          .backgroundColor('#00000066')
           .justifyContent(FlexAlign.Center)
         }
       }
-      .width('90%')
-      .height(400)
-      .borderRadius(16)
-      .backgroundColor('#000000')
-      .margin({ bottom: 8 })
+      .width('100%')
+      .height('100%')
       .gesture(
         PinchGesture({ fingers: 2, distance: 1 })
           .onActionStart(() => {
@@ -625,121 +809,39 @@ struct ScanPage {
           })
           .onActionUpdate((event: GestureEvent) => {
             if (event.scale > 0) {
-              // 捏合放大 → 数值增大 → 人像更近
               const next = this.pinchBaseZoom + (event.scale - 1) * 0.35;
               this.applyZoomFromSlider(next);
             }
           })
       )
 
+      // 顶部导航（半透明）
       Row() {
-        Text('远')
-          .fontSize(12)
-          .fontColor($r('app.color.text_secondary'))
-          .width(24)
-        Slider({
-          value: this.zoomSliderValue,
-          min: 0,
-          max: 1,
-          step: 0.02,
-          style: SliderStyle.OutSet
-        })
+        Text('←')
+          .fontSize(24)
+          .fontColor(Color.White)
+          .onClick(() => NavigationHelper.back(this.uiContext))
+        Text('古籍面诊自测')
+          .fontSize(17)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(Color.White)
           .layoutWeight(1)
-          .blockColor($r('app.color.primary'))
-          .trackColor($r('app.color.divider'))
-          .selectedColor($r('app.color.primary'))
-          .onChange((value: number) => {
-            this.applyZoomFromSlider(value);
-          })
-        Text('近')
-          .fontSize(12)
-          .fontColor($r('app.color.text_secondary'))
-          .width(24)
-          .textAlign(TextAlign.End)
+          .textAlign(TextAlign.Center)
+        Blank().width(24)
       }
-      .width('90%')
-      .padding({ left: 8, right: 8, bottom: 8 })
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 12, bottom: 8 })
+      .backgroundColor('#00000055')
 
-      Text(this.zoomSupported
-        ? '椭圆框固定不变；滑条/双指仅调节人像远近（镜头变焦）'
-        : '椭圆框固定不变；滑条/双指调节预览大小辅助对齐（本机不支持镜头变焦，请配合前后距离）')
-        .fontSize(11)
-        .fontColor($r('app.color.text_secondary'))
-        .textAlign(TextAlign.Center)
-        .margin({ bottom: 12 })
-        .padding({ left: 24, right: 24 })
-
-      Text(this.statusText)
-        .fontSize(14)
-        .fontColor($r('app.color.text_secondary'))
-        .textAlign(TextAlign.Center)
-        .margin({ bottom: 12 })
-        .padding({ left: 24, right: 24 })
-
-      // 拍照与上传并列，避免上传按钮被挤到屏幕外
-      Row({ space: 12 }) {
-        Button(this.analyzing ? '分析中...' : '现场拍照')
-          .layoutWeight(1)
-          .height(48)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .borderRadius(24)
-          .backgroundColor(this.analyzing ? $r('app.color.divider') : $r('app.color.primary'))
-          .enabled(!this.analyzing && this.cameraReady)
-          .onClick(() => this.captureAndAnalyze())
-
-        Button(this.analyzing ? '处理中...' : '上传已有照片')
-          .layoutWeight(1)
-          .height(48)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .borderRadius(24)
-          .backgroundColor($r('app.color.primary_light'))
-          .fontColor($r('app.color.text_primary'))
-          .enabled(!this.analyzing)
-          .onClick(() => this.galleryPickAndAnalyze())
+      // 全部操作与提示集中在底部，避免与预览区重叠
+      Column() {
+        this.BottomControlPanel()
       }
-      .width('90%')
-      .margin({ bottom: 8 })
-
-      Text('上传：从相册选已拍好的正脸；拍照：使用上方取景框现场拍摄')
-        .fontSize(11)
-        .fontColor($r('app.color.text_secondary'))
-        .textAlign(TextAlign.Center)
-        .margin({ bottom: 8 })
-        .padding({ left: 24, right: 24 })
-
-      if (!this.cameraReady && this.permissionGranted) {
-        Button('重试预览')
-          .fontSize(14)
-          .height(40)
-          .margin({ bottom: 12 })
-          .backgroundColor($r('app.color.primary_light'))
-          .onClick(() => {
-            this.retryPreview();
-          })
-      }
-
-      Text('拍照或上传后将提交至云端 AI 分析气色，完成后本地立即删除；断网时使用本地规则兜底')
-        .fontSize(11)
-        .fontColor($r('app.color.text_secondary'))
-        .textAlign(TextAlign.Center)
-        .padding({ bottom: 8 })
-
-      Text(`分析引擎：${this.visionEngineLabel}`)
-        .fontSize(10)
-        .fontColor($r('app.color.text_secondary'))
-        .textAlign(TextAlign.Center)
-        .padding({ bottom: 24 })
-        }
-        .width('100%')
-      }
-      .layoutWeight(1)
-      .scrollBar(BarState.Off)
-      .edgeEffect(EdgeEffect.Spring)
+      .width('100%')
+      .align(Alignment.Bottom)
     }
     .width('100%')
     .height('100%')
-    .backgroundColor($r('app.color.background'))
+    .backgroundColor('#000000')
   }
 }

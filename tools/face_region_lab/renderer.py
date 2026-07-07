@@ -79,13 +79,17 @@ def draw_vertical_text(
     x: int,
     y: int,
     font_size: int = 14,
-    color=(255, 255, 255),
+    color=(255, 255, 0),
 ) -> np.ndarray:
+    """竖排文字：亮黄色 + 细黑描边，提高可读性"""
     pil = Image.fromarray(cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(pil)
     font = _load_font(font_size)
     cy = y
     for ch in text:
+        # 描边
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            draw.text((x + dx, cy + dy), ch, font=font, fill=(0, 0, 0))
         draw.text((x, cy), ch, font=font, fill=color)
         cy += font_size + 1
     return cv2.cvtColor(np.array(pil), cv2.COLOR_RGB2BGR)
@@ -97,7 +101,7 @@ def render_annotated(
     line_width: int = 2,
     font_size: int = 0,
     label_inset: int = 2,
-    max_font: int = 8,
+    max_font: int = 10,
 ) -> np.ndarray:
     """叠加 25 色部方格；font_size=0 时按格大小自动缩小字号"""
     out = image_bgr.copy()
@@ -113,8 +117,7 @@ def render_annotated(
             cv2.rectangle(out, (r.x, r.y), (r.x + r.w, r.y + r.h), color, line_width)
 
         lx, ly = _label_position(r, fs, label_inset)
-        text_color = (color[2], color[1], color[0])
-        out = draw_vertical_text(out, r.name, lx, ly, font_size=fs, color=text_color)
+        out = draw_vertical_text(out, r.name, lx, ly, font_size=fs, color=(255, 255, 0))
 
     return out
 

@@ -5,6 +5,11 @@
 import { common } from '@kit.AbilityKit';
 import { CapturedImage, ICameraModule, PreviewSize, ZoomRatioRange } from '../../common/types/AppTypes';
 import { CameraSessionManager } from './CameraSessionManager';
+import {
+  BURST_CAPTURE_COUNT,
+  BURST_CAPTURE_INTERVAL_MS,
+  FrameQualityUtil
+} from '../../common/utils/FrameQualityUtil';
 
 export class CameraModule implements ICameraModule {
   private sessionManager: CameraSessionManager | null = null;
@@ -35,6 +40,32 @@ export class CameraModule implements ICameraModule {
       return null;
     }
     this.lastImage = await this.sessionManager.takePhoto();
+    return this.lastImage;
+  }
+
+  /**
+   * 连拍多帧并在端上选出最优 1 张（仍只保留/upload 一张）
+   * 连拍失败时回退为单次拍照
+   */
+  async captureBestPhoto(): Promise<CapturedImage | null> {
+    if (this.sessionManager === null) {
+      return null;
+    }
+
+    const frames = await this.sessionManager.takePhotoBurst(BURST_CAPTURE_COUNT, BURST_CAPTURE_INTERVAL_MS);
+    if (frames.length === 0) {
+      console.warn('[CameraModule] 连拍无有效帧，回退单次拍照');
+      return await this.capturePhoto();
+    }
+
+    const best = await FrameQualityUtil.selectBest(frames);
+    if (best === null) {
+      console.warn('[CameraModule] 选帧失败，使用连拍第一帧');
+      this.lastImage = frames[0];
+      return this.lastImage;
+    }
+
+    this.lastImage = best;
     return this.lastImage;
   }
 

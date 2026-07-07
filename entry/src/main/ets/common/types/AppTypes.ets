@@ -236,6 +236,8 @@ export interface ICameraModule {
   openCamera(surfaceId: string, viewWidthPx?: number, viewHeightPx?: number,
     onPreviewFrameStart?: () => void): Promise<boolean>;
   capturePhoto(): Promise<CapturedImage | null>;
+  /** 连拍选最优 1 帧（阶段 1：端上选帧，仍只上传一张） */
+  captureBestPhoto(): Promise<CapturedImage | null>;
   destroyImageData(): void;
   getLightLevel(): number;
   closeCamera(): Promise<void>;

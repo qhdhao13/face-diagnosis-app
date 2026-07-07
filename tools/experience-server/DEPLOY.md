@@ -72,3 +72,29 @@ curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8787/v1/auth/status   # 
 `AppConstants.ets` → `http://49.232.232.27:8787`，体验模式走 `/v1/region25/analyze`。
 
 白名单见 `whitelist.json`。
+
+## 7. 使用统计（管理员）
+
+每次色诊在 `data/sessions/{sessionId}/meta.json` 记录 `phone` 与 `createdAt`。
+
+**SSH 执行 CLI：**
+
+```bash
+cd /opt/face-diagnosis/experience-server
+node stats.js --days 30
+node stats.js --days 7 --full-phone   # 本地查看完整手机号
+```
+
+**HTTP 接口：** 在 `.env` 设置 `ADMIN_STATS_KEY=随机长密钥` 后：
+
+```bash
+curl -s -H "Authorization: Bearer 你的密钥" \
+  "http://127.0.0.1:8787/v1/admin/stats?days=30"
+```
+
+| 字段 | 含义 |
+|------|------|
+| `uniqueUsersWithAnalysis` | 时间范围内至少分析 1 次的去重用户 |
+| `totalAnalyses` | 色诊总次数 |
+| `registeredPhonesTotal` | 已注册手机号（含未分析） |
+| `byDay` | 按日：次数、独立用户数 |

@@ -29,6 +29,7 @@ tar czf "$TMP/face-lab-update.tgz" -C "$ROOT/tools/face_region_lab" \
 
 echo "==> 上传到 $SERVER"
 "${SCP[@]}" "$TMP/web-region25.tgz" "$TMP/experience-update.tgz" "$TMP/face-lab-update.tgz" "$SERVER:/tmp/"
+"${SCP[@]}" "$ROOT/docs/agc/privacy-policy.html" "$SERVER:/tmp/privacy-policy.html"
 
 echo "==> 远程安装"
 "${SSH[@]}" "$SERVER" bash -s <<'REMOTE'
@@ -43,6 +44,7 @@ mkdir -p "$SEZHEN_DIR"
 tar xzf /tmp/web-region25.tgz -C /tmp
 rm -rf "$SEZHEN_DIR"/*
 cp -a /tmp/web-region25/. "$SEZHEN_DIR/"
+cp /tmp/privacy-policy.html "$SEZHEN_DIR/privacy.html"
 chown -R nginx:nginx "$SEZHEN_DIR"
 
 tar xzf /tmp/experience-update.tgz -C "$EXP_DIR"
@@ -93,4 +95,5 @@ REMOTE
 rm -rf "$TMP"
 echo "==> 部署完成"
 echo "    网页：http://qhdhao.cn/sezhen/"
+echo "    隐私政策：http://qhdhao.cn/sezhen/privacy.html"
 echo "    首页已加链接（若尚未存在）"

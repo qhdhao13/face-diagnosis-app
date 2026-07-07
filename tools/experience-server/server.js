@@ -14,6 +14,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { buildUsageStats } = require('./lib/usageStats');
 
 const PORT = process.env.PORT || 8787;
 const DASHSCOPE_KEY = process.env.DASHSCOPE_API_KEY || '';
@@ -81,6 +82,8 @@ const REGION25_INDEX_FILE = path.join(DATA_DIR, 'region25_index.json');
 const TOKENS_FILE = path.join(DATA_DIR, 'tokens.json');
 const QUOTA_FILE = path.join(DATA_DIR, 'quota.json');
 const REGION25_PYTHON_URL = process.env.REGION25_PYTHON_URL || 'http://127.0.0.1:8788';
+/** 管理员统计接口密钥；请求头 Authorization: Bearer <key> 或 ?key= */
+const ADMIN_STATS_KEY = process.env.ADMIN_STATS_KEY || '';
 
 /** 网页版（qhdhao.cn 等）跨域白名单，逗号分隔；设 * 允许任意来源（仅内测） */
 const CORS_ORIGINS = (process.env.CORS_ORIGINS ||
@@ -185,6 +188,21 @@ function authPhone(req) {
     return null;
   }
   return { token, phone };
+}
+
+/** 管理员统计接口鉴权 */
+function authAdmin(req) {
+  if (!ADMIN_STATS_KEY || ADMIN_STATS_KEY.length < 8) {
+    return false;
+  }
+  const auth = req.headers['authorization'] || '';
+  let key = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+  if (!key && req.url.includes('?')) {
+    const q = req.url.split('?')[1];
+    const params = new URLSearchParams(q);
+    key = params.get('key') || params.get('adminKey') || '';
+  }
+  return key === ADMIN_STATS_KEY;
 }
 
 async function dashscopeChat(body) {
@@ -526,6 +544,22 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 404, { ok: false, message: '无权访问' });
     }
     return sendFile(res, path.join(SESSIONS_DIR, sessionId, fileName), IMAGE_TYPES[fileName]);
+  }
+
+  if (req.method === 'GET' && url.startsWith('/v1/admin/stats')) {
+    if (!authAdmin(req)) {
+      return sendJson(res, 403, { ok: false, message: '需要管理员密钥（设置 ADMIN_STATS_KEY）' });
+    }
+    let days = 30;
+    if (req.url.includes('?')) {
+      const params = new URLSearchParams(req.url.split('?')[1]);
+      const d = parseInt(params.get('days') || '30', 10);
+      if (d > 0 && d <= 365) {
+        days = d;
+      }
+    }
+    const stats = buildUsageStats({ dataDir: DATA_DIR, days, maskPhones: true });
+    return sendJson(res, 200, stats);
   }
 
   if (req.method === 'GET' && url === '/v1/region25/history') {

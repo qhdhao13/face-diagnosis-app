@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>古籍面诊养生 · 隐私政策</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      color: #333;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+      background: #faf8f5;
+    }
+    h1 { font-size: 1.5rem; color: #5c3d2e; margin-bottom: 0.25rem; }
+    .meta { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1.1rem; color: #5c3d2e; margin-top: 1.75rem; border-left: 4px solid #8b4513; padding-left: 10px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.95rem; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
+    th { background: #f0e8df; }
+    .note { background: #fff3e0; border: 1px solid #ffcc80; padding: 12px; border-radius: 6px; font-size: 0.9rem; }
+    a { color: #8b4513; }
+  </style>
+</head>
+<body>
+  <h1>古籍面诊养生 · 隐私政策</h1>
+  <p class="meta">
+    更新日期：2026-07-07<br />
+    应用名称：古籍面诊养生<br />
+    包名：com.face.diagnosis.app<br />
+    开发者：qhdhao（<a href="mailto:qhdhao@126.com">qhdhao@126.com</a>）
+  </p>
+
+  <p>
+    「古籍面诊养生」是一款传统中医古籍文化趣味自测工具，<strong>非医疗软件</strong>，
+    不提供诊断、诊疗或用药指导。本政策说明我们如何收集、使用与保护您的信息。
+  </p>
+
+  <h2>一、应用权限说明</h2>
+  <p>本应用申请以下 HarmonyOS 系统权限。其中标注为「需用户授权」的权限，仅在您同意后方可使用。</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>权限名称</th>
+        <th>类型</th>
+        <th>用途说明</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>相机</strong><br /><code>ohos.permission.CAMERA</code></td>
+        <td>需用户授权<br />（user_grant）</td>
+        <td>
+          在扫描页调用前置摄像头拍摄正脸照片，用于气色文化自测分析；
+          您也可使用相册选图代替拍照。照片仅用于本次分析，分析完成后本地立即删除，不在服务器长期保存。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>网络</strong><br /><code>ohos.permission.INTERNET</code></td>
+        <td>普通权限</td>
+        <td>
+          将面部照片上传至您配置的 AI 服务或开发者体验服进行分析；
+          断网时使用本地规则兜底，不上传照片。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>网络状态</strong><br /><code>ohos.permission.GET_NETWORK_INFO</code></td>
+        <td>普通权限</td>
+        <td>检测设备是否联网，以便在在线/离线模式之间切换。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <strong>说明：</strong>若您拒绝相机权限，仍可通过相册上传照片完成自测；拒绝联网授权时，体验免 Key 与云端分析功能不可用。
+  </div>
+
+  <h2>二、我们收集的信息</h2>
+  <ul>
+    <li><strong>面部照片</strong>：您主动拍摄或从相册选择，用于生成文化自测报告；分析完成后本地删除，服务器不长期保存。</li>
+    <li><strong>手机号</strong>：用于注册账号与体验配额统计，存储于开发者配置的体验服务器。</li>
+    <li><strong>昵称等基础信息</strong>：仅保存在您的本地设备。</li>
+    <li><strong>API Key</strong>（可选）：若您使用自带 Key 模式，密钥仅保存在本地设备，不上传至开发者服务器。</li>
+  </ul>
+
+  <h2>三、信息如何使用</h2>
+  <ul>
+    <li>体验免 Key 模式：照片经开发者服务器转发至 AI 服务分析（白名单用户每日限次）。</li>
+    <li>自带 Key 模式：照片直连您配置的 AI 服务（如通义千问 OpenAI 兼容接口）。</li>
+    <li>所有分析结果仅供文化娱乐与日常养护参考，不具备医学参考价值。</li>
+  </ul>
+
+  <h2>四、信息共享与存储</h2>
+  <ul>
+    <li>我们不会出售您的个人信息。</li>
+    <li>照片与分析请求仅发送至您选择或配置的 AI 服务端点及开发者体验服，用于完成单次分析。</li>
+    <li>体验服会话数据仅供内测，不用于广告或用户画像。</li>
+  </ul>
+
+  <h2>五、您的权利</h2>
+  <ul>
+    <li>您可随时在系统设置中撤销相机、网络等权限。</li>
+    <li>您可停止使用本应用并卸载，本地数据随之清除。</li>
+    <li>如需注销体验账号或删除服务器侧手机号记录，请联系：<a href="mailto:qhdhao@126.com">qhdhao@126.com</a>。</li>
+  </ul>
+
+  <h2>六、未成年人保护</h2>
+  <p>本应用面向成年人文化自测场景。若您为未成年人，请在监护人同意与指导下使用。</p>
+
+  <h2>七、政策更新</h2>
+  <p>我们可能适时更新本政策，更新后的版本将在此页面发布并注明日期。继续使用即视为接受更新后的政策。</p>
+
+  <h2>八、联系我们</h2>
+  <p>
+    邮箱：<a href="mailto:qhdhao@126.com">qhdhao@126.com</a><br />
+    网页体验：<a href="http://qhdhao.cn/sezhen/">http://qhdhao.cn/sezhen/</a>
+  </p>
+</body>
+</html>

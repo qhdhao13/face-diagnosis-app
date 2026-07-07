@@ -10,7 +10,7 @@
       "2in1"
     ],
     "deliveryWithInstall": true,
-    "installationFree": true,
+    "installationFree": false,
     "pages": "$profile:main_pages",
     "metadata": [
       {
