@@ -170,14 +170,145 @@ button.secondary {
   line-height: 1.7;
 }
 
+.line-items-block {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #faf6ef;
+}
+
+.line-items-hint {
+  margin: 0 0 8px;
+}
+
 #lineItems {
+  margin: 0;
   padding-left: 1.2rem;
   font-size: 0.82rem;
-  color: var(--muted);
+  color: var(--text);
+  min-height: 2rem;
 }
 
 #lineItems li {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  line-height: 1.55;
+}
+
+.section-heading {
+  margin: 20px 0 12px;
+  font-size: 1rem;
+  color: var(--primary);
+}
+
+.extras-block {
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+.extras-loading {
+  margin: 8px 0 0;
+}
+
+.prose-block {
+  white-space: pre-wrap;
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: var(--text);
+  padding: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.ancient-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.ancient-source {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.ancient-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--warn);
+  margin-bottom: 4px;
+}
+
+.ancient-original {
+  padding: 10px;
+  background: #fff8f0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ancient-modern {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.wellness-plan-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.wellness-notice {
+  font-size: 0.75rem;
+  color: var(--warn);
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.wellness-section {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.wellness-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.wellness-section-title {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wellness-citation {
+  margin-bottom: 10px;
+}
+
+.wellness-citation-src {
+  margin: 0 0 4px;
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.wellness-citation-text {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.55;
+  font-style: italic;
 }
 
 .meta {

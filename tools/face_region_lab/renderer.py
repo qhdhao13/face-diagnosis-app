@@ -12,6 +12,28 @@ from PIL import Image, ImageDraw, ImageFont
 
 from region_mapper import RegionRect
 
+# 模块目录，用于查找项目内置字体
+_ROOT = Path(__file__).parent
+
+# 候选中文字体（按优先级）。云主机常见 Noto CJK；全部未命中时 PIL 默认字体无法显示中文（方框）
+_FONT_CANDIDATES: List[Path | str] = [
+    _ROOT / "assets" / "fonts" / "NotoSansSC-Regular.otf",
+    "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Medium.ttc",
+    "/usr/share/fonts/google-noto-cjk/NotoSansCJK-Light.ttc",
+    "/usr/share/fonts/google-noto-cjk/NotoSansCJK-DemiLight.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+    "/System/Library/Fonts/PingFang.ttc",
+    "/System/Library/Fonts/STHeiti Light.ttc",
+    "C:/Windows/Fonts/msyh.ttc",
+    "C:/Windows/Fonts/simhei.ttf",
+]
+
+# 解析后的字体路径（进程内缓存，避免每字查找磁盘）
+_resolved_font_path: Path | None = None
+
 # 25 区区分色（BGR）
 PALETTE: List[Tuple[int, int, int]] = [
     (60, 60, 200), (60, 180, 60), (200, 120, 40), (180, 60, 180), (40, 160, 160),
@@ -22,16 +44,31 @@ PALETTE: List[Tuple[int, int, int]] = [
 ]
 
 
+def _resolve_font_path() -> Path | None:
+    """查找第一个可用的中文字体文件"""
+    global _resolved_font_path
+    if _resolved_font_path is not None and _resolved_font_path.is_file():
+        return _resolved_font_path
+    for candidate in _FONT_CANDIDATES:
+        path = Path(candidate)
+        if path.is_file():
+            _resolved_font_path = path
+            return path
+    return None
+
+
 def _load_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
-    candidates = [
-        "/System/Library/Fonts/PingFang.ttc",
-        "/System/Library/Fonts/STHeiti Light.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
-        "C:/Windows/Fonts/msyh.ttc",
-    ]
-    for path in candidates:
-        if Path(path).exists():
-            return ImageFont.truetype(path, size)
+    """加载 TrueType/OpenType 字体；size 为竖排单字像素高度"""
+    path = _resolve_font_path()
+    if path is not None:
+        try:
+            # Noto CJK 的 .ttc 集合字体，index=0 通常为简体中文
+            return ImageFont.truetype(str(path), size, index=0)
+        except OSError:
+            try:
+                return ImageFont.truetype(str(path), size)
+            except OSError:
+                pass
     return ImageFont.load_default()
 
 

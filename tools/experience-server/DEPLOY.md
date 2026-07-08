@@ -35,8 +35,8 @@ scp /tmp/face_region_lab.tgz /tmp/experience-server-update.tgz root@49.232.232.2
 服务器：
 
 ```bash
-# 系统库（MediaPipe / OpenCV 无头服务器必需）
-dnf install -y python3 python3-pip python3-devel mesa-libGL mesa-libEGL
+# 系统库（MediaPipe / OpenCV 无头服务器必需）+ 中文字体（标注图色部名，否则显示方框）
+dnf install -y python3 python3-pip python3-devel mesa-libGL mesa-libEGL google-noto-sans-cjk-ttc-fonts
 
 mkdir -p /opt/face-diagnosis/face_region_lab
 tar xzf /tmp/face_region_lab.tgz -C /opt/face-diagnosis/face_region_lab

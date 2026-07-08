@@ -23,9 +23,13 @@ TMP=$(mktemp -d)
 tar czf "$TMP/web-region25.tgz" -C "$ROOT/tools" web-region25
 
 echo "==> 打包体验服与 Python 更新"
-tar czf "$TMP/experience-update.tgz" -C "$ROOT/tools/experience-server" server.js
+tar czf "$TMP/experience-update.tgz" -C "$ROOT/tools/experience-server" \
+  server.js lib/region25Enrich.js lib/usageStats.js data/ancient_knowledge.json
 tar czf "$TMP/face-lab-update.tgz" -C "$ROOT/tools/face_region_lab" \
-  report_builder.py gender_estimate.py pipeline.py
+  grid_from_68.py renderer.py regions_25.json validate_grid_visual.py \
+  pipeline.py report_builder.py gender_estimate.py region_mapper.py \
+  landmark_provider.py color_analysis.py ling_shu_rules.py \
+  validate.py api_server.py
 
 echo "==> 上传到 $SERVER"
 "${SCP[@]}" "$TMP/web-region25.tgz" "$TMP/experience-update.tgz" "$TMP/face-lab-update.tgz" "$SERVER:/tmp/"
@@ -50,10 +54,14 @@ chown -R nginx:nginx "$SEZHEN_DIR"
 tar xzf /tmp/experience-update.tgz -C "$EXP_DIR"
 tar xzf /tmp/face-lab-update.tgz -C "$LAB_DIR"
 
-# Nginx：/sezhen/ 与 /face-api/ 反代
+# Nginx：/sezhen/ 与 /face-api/ 反代（^~ 防止静态 *.jpg 规则抢走标注图）
+if grep -q 'location /face-api/' "$NGINX_CONF" && ! grep -q 'location \^~ /face-api/' "$NGINX_CONF"; then
+  sed -i 's|location /face-api/|location ^~ /face-api/|' "$NGINX_CONF"
+fi
+
 if ! grep -q 'location /sezhen/' "$NGINX_CONF"; then
   sed -i '/location \/posts\//i\
-    location /face-api/ {\
+    location ^~ /face-api/ {\
         proxy_pass http://127.0.0.1:8787/;\
         proxy_set_header Host $host;\
         proxy_read_timeout 120s;\
@@ -85,8 +93,10 @@ echo "--- 健康检查 ---"
 curl -sf http://127.0.0.1:8788/health
 echo
 curl -s -o /dev/null -w "face-experience HTTP %{http_code}\n" http://127.0.0.1:8787/v1/auth/status
-curl -s -o /dev/null -w "sezhen page HTTP %{http_code}\n" http://127.0.0.1/sezhen/
-curl -s -o /dev/null -w "face-api proxy HTTP %{http_code}\n" http://127.0.0.1/face-api/v1/auth/status
+curl -s -o /dev/null -w "sezhen page HTTP %{http_code}\n" -H 'Host: qhdhao.cn' http://127.0.0.1/sezhen/
+curl -s -o /dev/null -w "face-api proxy HTTP %{http_code}\n" -H 'Host: qhdhao.cn' http://127.0.0.1/face-api/v1/auth/status
+# 标注图须走反代（带 .jpg 后缀，易被静态规则拦截；^~ 修复后应为 401 无 token / 200 有 token）
+curl -s -o /dev/null -w "face-api image route HTTP %{http_code}\n" -H 'Host: qhdhao.cn' http://127.0.0.1/face-api/v1/region25/image/00000000-0000-0000-0000-000000000000/annotated.jpg
 
 # CORS 头抽检
 curl -sI -H 'Origin: http://qhdhao.cn' http://127.0.0.1:8787/v1/auth/status | grep -i access-control || true

@@ -26,6 +26,84 @@
     $('result').hidden = !show;
   }
 
+  /** 从报告中提取 25 区分项（兼容 snake_case / camelCase / regions 回退） */
+  function extractLineItems(report) {
+    if (!report) return [];
+    if (Array.isArray(report.line_items) && report.line_items.length > 0) {
+      return report.line_items;
+    }
+    if (Array.isArray(report.lineItems) && report.lineItems.length > 0) {
+      return report.lineItems;
+    }
+    const regions = Array.isArray(report.regions) ? report.regions : [];
+    return regions
+      .slice()
+      .sort((a, b) => (a.id || 0) - (b.id || 0))
+      .map((r) => r.interpretation || r.interpretation_text || '')
+      .filter((s) => String(s).trim().length > 0);
+  }
+
+  /** 渲染 25 区分项列表 */
+  function renderLineItems(report) {
+    const list = $('lineItems');
+    const hint = $('lineItemsHint');
+    const items = extractLineItems(report);
+    list.innerHTML = '';
+    if (items.length === 0) {
+      if (hint) hint.textContent = '暂无分项数据，请重新分析或联系管理员。';
+      return;
+    }
+    if (hint) hint.textContent = `共 ${items.length} 条`;
+    items.forEach((line, i) => {
+      const li = document.createElement('li');
+      li.textContent = `${i + 1}. ${line}`;
+      list.appendChild(li);
+    });
+  }
+
+  /** 清空扩展报告区（古人解读 / 溯源 / 四维养护） */
+  function resetExtrasBlock() {
+    const block = $('extrasBlock');
+    const loading = $('extrasLoading');
+    const content = $('extrasContent');
+    if (block) block.hidden = true;
+    if (loading) {
+      loading.hidden = false;
+      loading.textContent = '正在匹配古籍并生成解读…';
+    }
+    if (content) content.hidden = true;
+    if ($('culturalInterpretation')) $('culturalInterpretation').textContent = '';
+    if ($('ancientReferences')) $('ancientReferences').innerHTML = '';
+    if ($('wellnessPlan')) $('wellnessPlan').innerHTML = '';
+  }
+
+  /** 展示扩展报告（优先用分析接口返回的 reportExtras） */
+  function renderExtrasFromData(extras) {
+    const block = $('extrasBlock');
+    const loading = $('extrasLoading');
+    const content = $('extrasContent');
+    if (!block) return;
+
+    block.hidden = false;
+    if (!extras || !window.ReportExtras) {
+      if (loading) {
+        loading.hidden = false;
+        loading.textContent = extras ? '渲染组件未加载，请强制刷新页面' : '暂无扩展报告数据';
+      }
+      if (content) content.hidden = true;
+      return;
+    }
+
+    window.ReportExtras.renderCulturalInterpretation(
+      $('culturalInterpretation'),
+      extras.culturalInterpretation
+    );
+    window.ReportExtras.renderAncientReferences($('ancientReferences'), extras.ancientEntries);
+    window.ReportExtras.renderWellnessPlan($('wellnessPlan'), extras.wellnessPlan);
+    if (loading) loading.hidden = true;
+    if (content) content.hidden = false;
+  }
+
   async function apiPost(path, body) {
     const res = await fetch(`${apiBase()}${path}`, {
       method: 'POST',
@@ -117,6 +195,7 @@
     $('analyzeBtn').disabled = true;
     setStatus('正在上传并分析（约 10～30 秒）…');
     showResult(false);
+    resetExtrasBlock();
 
     try {
       const imageBase64 = await fileToBase64(file);
@@ -132,28 +211,36 @@
         throw new Error(data.genderCheck.warning || '性别与设置不符');
       }
 
-      const report = data.colorReport;
+      const report = data.colorReport || {};
       const tokenQ = encodeURIComponent(token);
       const annUrl = `${apiBase()}${data.urls.annotatedImage}?token=${tokenQ}`;
 
       $('annotated').src = annUrl;
+      $('annotated').alt = '二十五区标注图（分析完成）';
       $('sessionId').textContent = data.sessionId;
+      renderLineItems(report);
       $('summary').textContent = buildClassicalSummary(report);
-
-      const list = $('lineItems');
-      list.innerHTML = '';
-      (report.line_items || []).forEach((line, i) => {
-        const li = document.createElement('li');
-        li.textContent = `${i + 1}. ${line}`;
-        list.appendChild(li);
-      });
 
       $('engine').textContent = 'region25_cloud（网页版）';
       if (data.dailyFreeRemaining !== undefined) {
         $('quota').textContent = `今日剩余 ${data.dailyFreeRemaining} 次`;
       }
       showResult(true);
+      let extras = data.reportExtras;
+      if (!extras && data.sessionId) {
+        try {
+          const rep = await apiGet(`/v1/region25/report/${data.sessionId}`);
+          extras = rep.reportExtras;
+        } catch (_e) {
+          /* 忽略 */
+        }
+      }
+      renderExtrasFromData(extras);
       setStatus('分析完成');
+      const extrasBlock = $('extrasBlock');
+      if (extrasBlock && !extrasBlock.hidden) {
+        extrasBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     } catch (err) {
       setStatus(err.message || '分析失败', true);
     } finally {

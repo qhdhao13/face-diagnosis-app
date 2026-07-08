@@ -15,6 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { buildUsageStats } = require('./lib/usageStats');
+const { buildReportExtras } = require('./lib/region25Enrich');
 
 const PORT = process.env.PORT || 8787;
 const DASHSCOPE_KEY = process.env.DASHSCOPE_API_KEY || '';
@@ -488,10 +489,24 @@ const server = http.createServer(async (req, res) => {
 
     appendSessionIndex(auth.phone, sessionId);
 
+    let reportExtras = null;
+    try {
+      reportExtras = await buildReportExtras(
+        py.data.colorReport,
+        profileGender,
+        DASHSCOPE_KEY ? dashscopeChat : null
+      );
+      const extrasPath = path.join(SESSIONS_DIR, sessionId, 'report_extras.json');
+      fs.writeFileSync(extrasPath, JSON.stringify(reportExtras, null, 2));
+    } catch (err) {
+      console.warn('[server] reportExtras failed:', err.message || err);
+    }
+
     return sendJson(res, 200, {
       ok: true,
       sessionId,
       colorReport: py.data.colorReport,
+      reportExtras,
       meta: py.data.meta,
       genderCheck: py.data.genderCheck || {},
       urls: {
@@ -517,10 +532,20 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 404, { ok: false, message: '报告文件不存在' });
     }
     const colorReport = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+    let reportExtras = null;
+    const extrasPath = path.join(SESSIONS_DIR, sessionId, 'report_extras.json');
+    if (fs.existsSync(extrasPath)) {
+      try {
+        reportExtras = JSON.parse(fs.readFileSync(extrasPath, 'utf8'));
+      } catch (_e) {
+        reportExtras = null;
+      }
+    }
     return sendJson(res, 200, {
       ok: true,
       sessionId,
       colorReport,
+      reportExtras,
       urls: {
         annotatedImage: `/v1/region25/image/${sessionId}/annotated.jpg`,
         originalImage: `/v1/region25/image/${sessionId}/original.jpg`

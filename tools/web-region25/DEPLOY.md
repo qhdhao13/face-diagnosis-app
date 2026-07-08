@@ -48,8 +48,9 @@ location /sezhen/ {
 若希望 API 也走 `qhdhao.cn`，可在 Nginx 增加：
 
 ```nginx
-location /face-api/ {
-    proxy_pass http://49.232.232.27:8787/;
+# 必须用 ^~：否则下方「静态 *.jpg」正则会把 annotated.jpg 当博客静态文件，返回 404
+location ^~ /face-api/ {
+    proxy_pass http://127.0.0.1:8787/;
     proxy_set_header Host $host;
     proxy_read_timeout 120s;
     client_max_body_size 20m;

@@ -63,6 +63,7 @@
   }
 
   function buildClassicalSummary(colorReport) {
+    if (!colorReport) return '暂无综合摘要。';
     const regions = colorReport.regions || [];
     const serverText = (colorReport.summary && colorReport.summary.summary_text) || '';
     if (serverText && !serverText.includes('L=') && serverText.includes('【整体结论】')) {

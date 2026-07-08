@@ -66,8 +66,25 @@
       <img id="annotated" alt="二十五区标注图" />
       <h2>综合</h2>
       <div id="summary"></div>
-      <h2 style="margin-top:16px;">分项（25 区）</h2>
-      <ol id="lineItems"></ol>
+      <div id="lineItemsBlock" class="line-items-block">
+        <h2 style="margin-top:16px;">分项（25 区）</h2>
+        <p id="lineItemsHint" class="meta line-items-hint"></p>
+        <ol id="lineItems"></ol>
+      </div>
+
+      <div id="extrasBlock" class="extras-block" hidden>
+        <p id="extrasLoading" class="meta extras-loading">正在匹配古籍并生成解读…</p>
+        <div id="extrasContent" hidden>
+          <h2 class="section-heading">古人养生文化解读</h2>
+          <div id="culturalInterpretation" class="prose-block"></div>
+
+          <h2 class="section-heading">古籍溯源</h2>
+          <div id="ancientReferences"></div>
+
+          <h2 class="section-heading">四维养护参考方案（古籍原文摘录）</h2>
+          <div id="wellnessPlan" class="wellness-plan-card"></div>
+        </div>
+      </div>
     </section>
 
     <p class="disclaimer">
@@ -76,8 +93,12 @@
     </p>
   </div>
 
-  <script src="config.js"></script>
-  <script src="js/summary.js"></script>
-  <script src="js/app.js"></script>
+  <script src="config.js?v=20260709b"></script>
+  <script src="js/featureMapper.js?v=20260709b"></script>
+  <script src="js/knowledgeMatch.js?v=20260709b"></script>
+  <script src="js/wellnessPlan.js?v=20260709b"></script>
+  <script src="js/reportExtras.js?v=20260709b"></script>
+  <script src="js/summary.js?v=20260709b"></script>
+  <script src="js/app.js?v=20260709b"></script>
 </body>
 </html>
